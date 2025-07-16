@@ -1,0 +1,47 @@
+# Source files
+src/
+tsconfig.json
+
+# Development files
+example/
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Tests
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# CI/CD
+.github/
+.travis.yml
+.circleci/
+
+# Documentation (except README)
+docs/
+
+# Configuration files
+.eslintrc*
+.prettierrc*
+babel.config.js
+metro.config.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+*.swp
+*.swo
+*~
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Development dependencies
+node_modules/ 

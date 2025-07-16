@@ -1,0 +1,16 @@
+{
+  "name": "react-native-advanced-flatlist-example",
+  "version": "1.0.0",
+  "description": "Example usage of react-native-advanced-flatlist",
+  "main": "index.js",
+  "scripts": {
+    "start": "react-native start",
+    "build": "echo 'Example build script'"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-native": "^0.72.0",
+    "react-native-advanced-flatlist": "file:../"
+  },
+  "private": true
+} 

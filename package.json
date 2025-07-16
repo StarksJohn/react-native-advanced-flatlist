@@ -1,0 +1,60 @@
+{
+  "name": "react-native-advanced-flatlist",
+  "version": "1.0.1",
+  "description": "An advanced FlatList component for React Native with built-in pagination, refresh control, single selection, and loading states",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "src/**/*",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rimraf lib",
+    "prepare": "npm run clean && npm run build",
+    "prepublishOnly": "npm run clean && npm run build",
+    "prepack": "npm run clean && npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "publish:check": "npm pack --dry-run",
+    "publish:patch": "npm version patch && npm publish",
+    "publish:minor": "npm version minor && npm publish", 
+    "publish:major": "npm version major && npm publish"
+  },
+  "keywords": [
+    "react-native",
+    "flatlist",
+    "pagination",
+    "refresh",
+    "selection",
+    "loading",
+    "advanced",
+    "component",
+    "typescript"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/react-native-advanced-flatlist.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/react-native-advanced-flatlist/issues"
+  },
+  "homepage": "https://github.com/yourusername/react-native-advanced-flatlist#readme",
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-native": ">=0.60.0"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.10",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
