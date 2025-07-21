@@ -1,6 +1,6 @@
 {
   "name": "react-native-advanced-flatlist",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An advanced FlatList component for React Native with built-in pagination, refresh control, single selection, and loading states",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -19,7 +19,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "publish:check": "npm pack --dry-run",
     "publish:patch": "npm version patch && npm publish",
-    "publish:minor": "npm version minor && npm publish", 
+    "publish:minor": "npm version minor && npm publish",
     "publish:major": "npm version major && npm publish",
     "release": "node scripts/release.js"
   },
