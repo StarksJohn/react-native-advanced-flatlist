@@ -1,7 +1,7 @@
 # cc Request Template
 
 ## 🎯 Perform the following tasks
-# 1.
+# 1. 你执行 "npm run release patch", 解决报错
 
 
 ---
