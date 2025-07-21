@@ -24,14 +24,15 @@ yarn add react-native-advanced-flatlist
 ## Basic Usage
 
 ```tsx
-import React, { useCallback, useRef } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import AdvancedFlatList, { 
-  AdvancedFlatListRef, 
-  FetchDataParams, 
+import React, {useCallback, useRef} from 'react';
+import {View, Text, TouchableOpacity} from 'react-native';
+import {
+  AdvancedFlatList,
+  AdvancedFlatListRef,
+  FetchDataParams,
   ListData,
   ListItem,
-  RenderItemParams 
+  RenderItemParams
 } from 'react-native-advanced-flatlist';
 
 interface MyItem extends ListItem {
@@ -43,12 +44,12 @@ const MyComponent = () => {
   const flatListRef = useRef<AdvancedFlatListRef>(null);
 
   // Fetch data function
-  const fetchData = useCallback(async ({ pageIndex, pageSize }: FetchDataParams): Promise<ListData | null> => {
+  const fetchData = useCallback(async ({pageIndex, pageSize}: FetchDataParams): Promise<ListData | null> => {
     try {
       // Replace with your API call
       const response = await fetch(`/api/items?page=${pageIndex}&size=${pageSize}`);
       const data = await response.json();
-      
+
       return {
         items: data.items,
         pageIndex: pageIndex,
@@ -61,7 +62,7 @@ const MyComponent = () => {
   }, []);
 
   // Custom render item
-  const renderItem = useCallback(({ item, index, selected, onItemPress }: RenderItemParams) => {
+  const renderItem = useCallback(({item, index, selected, onItemPress}: RenderItemParams) => {
     const myItem = item as MyItem;
     return (
       <TouchableOpacity
@@ -73,8 +74,8 @@ const MyComponent = () => {
           borderBottomColor: '#eee'
         }}
       >
-        <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{myItem.title}</Text>
-        <Text style={{ fontSize: 14, color: '#666' }}>{myItem.description}</Text>
+        <Text style={{fontSize: 16, fontWeight: 'bold'}}>{myItem.title}</Text>
+        <Text style={{fontSize: 14, color: '#666'}}>{myItem.description}</Text>
       </TouchableOpacity>
     );
   }, []);
@@ -85,7 +86,7 @@ const MyComponent = () => {
   }, []);
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{flex: 1}}>
       <AdvancedFlatList
         ref={flatListRef}
         fetchData={fetchData}
