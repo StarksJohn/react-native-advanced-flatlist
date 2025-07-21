@@ -1,8 +1,7 @@
 # cc Request Template
 
 ## 🎯 Perform the following tasks
-[
-]
+# 1.
 
 
 ---

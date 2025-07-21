@@ -20,7 +20,8 @@
     "publish:check": "npm pack --dry-run",
     "publish:patch": "npm version patch && npm publish",
     "publish:minor": "npm version minor && npm publish", 
-    "publish:major": "npm version major && npm publish"
+    "publish:major": "npm version major && npm publish",
+    "release": "node scripts/release.js"
   },
   "keywords": [
     "react-native",
