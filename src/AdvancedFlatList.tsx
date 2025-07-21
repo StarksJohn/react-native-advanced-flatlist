@@ -20,12 +20,13 @@ import {
   RefreshControl,
   Text,
 } from 'react-native';
-import { createStyles } from './styles';
+import {createStyles} from './styles';
 
 // Base list item interface
 export interface ListItem {
   id: string | number;
   selected?: boolean;
+
   [key: string]: any;
 }
 
@@ -52,6 +53,9 @@ export interface RenderItemParams {
 
 // Component props interface
 export interface AdvancedFlatListProps {
+  // Component identification
+  tag?: string;
+
   // Initial data and pagination
   initialData?: Partial<ListData>;
   initPageIndex?: number;
@@ -111,7 +115,7 @@ export interface InternalState {
 }
 
 // Default empty component
-const DefaultEmptyComponent: React.FC<{ text: string }> = ({ text }) => {
+const DefaultEmptyComponent: React.FC<{ text: string }> = ({text}) => {
   const styles = createStyles();
   return (
     <View style={styles.emptyContainer}>
@@ -122,7 +126,7 @@ const DefaultEmptyComponent: React.FC<{ text: string }> = ({ text }) => {
 
 // Default list item component
 const DefaultListItem: React.FC<RenderItemParams> = memo((props: RenderItemParams) => {
-  const { item, onItemPress } = props;
+  const {item, onItemPress} = props;
   return (
     <TouchableOpacity
       onPress={() => onItemPress && onItemPress(item, 0)}
@@ -145,6 +149,7 @@ const DefaultListItem: React.FC<RenderItemParams> = memo((props: RenderItemParam
 const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
   function AdvancedFlatList(props, ref) {
     const {
+      tag = 'advanced',
       initPageIndex = 0,
       initialData = {},
       pageSize = 20,
@@ -186,6 +191,9 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
     useEffect(() => {
       console.log('AdvancedFlatList componentDidMount');
 
+      // Special scroll behavior on mount (from common-flatList)
+      flatListRef.current?.scrollToOffset({offset: -100, animated: true});
+
       // Auto refresh if enabled
       if (autoRefresh) {
         console.log('AdvancedFlatList auto refresh starting');
@@ -204,11 +212,11 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
       () => ({
         scrollToTop: () => {
           console.log('AdvancedFlatList scrollToTop');
-          flatListRef.current?.scrollToOffset({ animated: true, offset: 0 });
+          flatListRef.current?.scrollToOffset({animated: true, offset: 0});
         },
         refresh: onRefresh,
         stopRefresh: () => {
-          setState(prev => ({ ...prev, refreshing: false }));
+          setState(prev => ({...prev, refreshing: false}));
           refreshingRef.current = false;
         },
         getItems: () => {
@@ -220,11 +228,11 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
           setState(prev => ({
             ...prev,
             items: prev.items.map((item, idx) =>
-              idx === index ? { ...item, selected: !item.selected } : item
+              idx === index ? {...item, selected: !item.selected} : item
             ),
           }));
         },
-        clearSelection: () => setState(prev => ({ ...prev, selectedId: null })),
+        clearSelection: () => setState(prev => ({...prev, selectedId: null})),
       }),
       [state.items]
     );
@@ -233,7 +241,7 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
     const onRefresh = useCallback(() => {
       console.log('AdvancedFlatList onRefresh refreshingRef.current=', refreshingRef.current);
       if (!refreshingRef.current) {
-        setState(prev => ({ ...prev, needLoadMore: false }));
+        setState(prev => ({...prev, needLoadMore: false}));
         fetchDataInternal('refresh');
       }
     }, []);
@@ -246,9 +254,9 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
 
         if (type === 'refresh') {
           refreshingRef.current = true;
-          setState(prev => ({ ...prev, refreshing: true, pageIndex, loading: false }));
+          setState(prev => ({...prev, refreshing: true, pageIndex, loading: false}));
         } else {
-          setState(prev => ({ ...prev, loading: true, refreshing: false, pageIndex }));
+          setState(prev => ({...prev, loading: true, refreshing: false, pageIndex}));
         }
 
         try {
@@ -301,10 +309,21 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
     );
 
     // Load more handler
-    const loadMoreItems = useCallback(() => {
+    const loadMoreItems = useCallback(async () => {
+      if (state.items.length === 0) {
+        return false;
+      }
 
-      if (!state.loading && state.needLoadMore) {
-        fetchDataInternal('loadMore');
+      const shouldLoadMore = !state.loading &&
+        state.needLoadMore;
+
+      if (shouldLoadMore) {
+        await fetchDataInternal('loadMore');
+      } else {
+        setState(prevState => ({
+          ...prevState,
+          needLoadMore: false
+        }));
       }
     }, [state, fetchDataInternal]);
 
@@ -324,7 +343,7 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
             if (onSingleSelectChange) {
               onSingleSelectChange(newSelected === null ? null : item);
             }
-            return { ...prev, selectedId: newSelected };
+            return {...prev, selectedId: newSelected};
           });
         }
       },
@@ -343,11 +362,11 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
 
     // Render item wrapper
     const renderItemWrapper: ListRenderItem<ListItem> = useCallback(
-      ({ item, index }) => {
+      ({item, index}) => {
         const selected = singleSelect ? state.selectedId === keyExtractor(item, index) : !!item.selected;
 
         if (renderItem) {
-          return renderItem({ item, index, selected, onItemPress: handleItemPress });
+          return renderItem({item, index, selected, onItemPress: handleItemPress});
         }
 
         return <DefaultListItem item={item} index={index} onItemPress={handleItemPress} />;
@@ -365,12 +384,13 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
 
     return (
       <FlatList<ListItem>
+        {...(tag && { key: tag })}
         ref={flatListRef}
         style={[
           styles.flatList,
           style,
         ]}
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{flexGrow: 1}}
         ListHeaderComponent={ListHeaderComponent}
         data={state.items}
         renderItem={renderItemWrapper}
@@ -393,4 +413,4 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
   }
 );
 
-export default memo(AdvancedFlatList); 
+export default memo(AdvancedFlatList);
