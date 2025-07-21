@@ -115,14 +115,14 @@ export interface InternalState {
 }
 
 // Default empty component
-const DefaultEmptyComponent: React.FC<{ text: string }> = ({text}) => {
-  const styles = createStyles();
+const DefaultEmptyComponent = memo<{ text: string }>(({text}) => {
+  const styles = useMemo(() => createStyles(), []);
   return (
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyText}>{text}</Text>
     </View>
   );
-};
+});
 
 // Default list item component
 const DefaultListItem: React.FC<RenderItemParams> = memo((props: RenderItemParams) => {
@@ -159,7 +159,7 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
       ListHeaderComponent,
       ListEmptyComponent,
       autoRefresh = true,
-      keyExtractor = (item: ListItem, index: number) => String(item.id),
+      keyExtractor = (item: ListItem, index?: number) => String(item.id),
       disabledRefresh = false,
       emptyText = 'No data available',
       showListEmptyComponent = true,
@@ -187,94 +187,31 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
     const refreshingRef = useRef(false);
     const styles = useMemo(() => createStyles(), []);
 
-    // Component lifecycle
-    useEffect(() => {
-      console.log('AdvancedFlatList componentDidMount');
-
-      // Special scroll behavior on mount (from common-flatList)
-      flatListRef.current?.scrollToOffset({offset: -100, animated: true});
-
-      // Auto refresh if enabled
-      if (autoRefresh) {
-        console.log('AdvancedFlatList auto refresh starting');
-        onRefresh();
-      }
-
-      // Cleanup
-      return () => {
-        console.log('AdvancedFlatList componentWillUnmount');
-      };
-    }, [autoRefresh]);
-
-    // Imperative handle for parent component access
-    useImperativeHandle(
-      ref,
-      () => ({
-        scrollToTop: () => {
-          console.log('AdvancedFlatList scrollToTop');
-          flatListRef.current?.scrollToOffset({animated: true, offset: 0});
-        },
-        refresh: onRefresh,
-        stopRefresh: () => {
-          setState(prev => ({...prev, refreshing: false}));
-          refreshingRef.current = false;
-        },
-        getItems: () => {
-          console.log('AdvancedFlatList getItems', state.items);
-          return state.items;
-        },
-        changeItemSelect: (index: number) => {
-          console.log('AdvancedFlatList changeItemSelect index=', index);
-          setState(prev => ({
-            ...prev,
-            items: prev.items.map((item, idx) =>
-              idx === index ? {...item, selected: !item.selected} : item
-            ),
-          }));
-        },
-        clearSelection: () => setState(prev => ({...prev, selectedId: null})),
-      }),
-      [state.items]
-    );
-
-    // Refresh handler
-    const onRefresh = useCallback(() => {
-      console.log('AdvancedFlatList onRefresh refreshingRef.current=', refreshingRef.current);
-      if (!refreshingRef.current) {
-        setState(prev => ({...prev, needLoadMore: false}));
-        fetchDataInternal('refresh');
-      }
-    }, []);
-
     // Internal fetch data function
     const fetchDataInternal = useCallback(
       async (type: 'refresh' | 'loadMore') => {
-        console.log('AdvancedFlatList fetchDataInternal type=', type);
-        const pageIndex = type === 'refresh' ? initPageIndex : state.pageIndex + 1;
+        setState(prev => {
+          const pageIndex = type === 'refresh' ? initPageIndex : prev.pageIndex + 1;
 
-        if (type === 'refresh') {
-          refreshingRef.current = true;
-          setState(prev => ({...prev, refreshing: true, pageIndex, loading: false}));
-        } else {
-          setState(prev => ({...prev, loading: true, refreshing: false, pageIndex}));
-        }
+          if (type === 'refresh') {
+            refreshingRef.current = true;
+            return {...prev, refreshing: true, pageIndex, loading: false};
+          } else {
+            return {...prev, loading: true, refreshing: false, pageIndex};
+          }
+        });
 
         try {
-          console.log('AdvancedFlatList preparing to fetchData');
+          const currentPageIndex = type === 'refresh' ? initPageIndex : state.pageIndex + 1;
           const result = await fetchData({
-            pageIndex,
+            pageIndex: currentPageIndex,
             pageSize,
           });
 
           refreshingRef.current = false;
-          console.log('AdvancedFlatList fetchData result=', result);
 
           if (result) {
             setState(prev => {
-              console.log('AdvancedFlatList fetchData prev.loading=', prev.loading);
-              console.log('AdvancedFlatList fetchData result.items.length=', result.items?.length);
-              console.log('AdvancedFlatList fetchData result.needLoadMore=', result.needLoadMore);
-
               const items = prev.loading ? [...prev.items, ...result.items] : result.items;
               return {
                 ...prev,
@@ -282,7 +219,7 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
                 items,
                 loading: false,
                 refreshing: false,
-                pageIndex,
+                pageIndex: currentPageIndex,
               };
             });
           } else {
@@ -295,7 +232,6 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
             }));
           }
         } catch (error) {
-          console.error('AdvancedFlatList fetch data error:', error);
           refreshingRef.current = false;
           setState(prev => ({
             ...prev,
@@ -305,7 +241,51 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
           }));
         }
       },
-      [state.items, state.pageIndex, fetchData, initPageIndex, pageSize]
+      [fetchData, initPageIndex, pageSize, state.pageIndex]
+    );
+
+    // Refresh handler
+    const onRefresh = useCallback(() => {
+      if (!refreshingRef.current) {
+        setState(prev => ({...prev, needLoadMore: false}));
+        fetchDataInternal('refresh');
+      }
+    }, [fetchDataInternal]);
+
+    // Component lifecycle
+    useEffect(() => {
+      // Auto refresh if enabled
+      if (autoRefresh) {
+        onRefresh();
+      }
+    }, [autoRefresh, onRefresh]);
+
+    // Imperative handle for parent component access
+    useImperativeHandle(
+      ref,
+      () => ({
+        scrollToTop: () => {
+          flatListRef.current?.scrollToOffset({animated: true, offset: 0});
+        },
+        refresh: onRefresh,
+        stopRefresh: () => {
+          setState(prev => ({...prev, refreshing: false}));
+          refreshingRef.current = false;
+        },
+        getItems: () => {
+          return state.items;
+        },
+        changeItemSelect: (index: number) => {
+          setState(prev => ({
+            ...prev,
+            items: prev.items.map((item, idx) =>
+              idx === index ? {...item, selected: !item.selected} : item
+            ),
+          }));
+        },
+        clearSelection: () => setState(prev => ({...prev, selectedId: null})),
+      }),
+      [state.items, onRefresh]
     );
 
     // Load more handler
@@ -314,8 +294,7 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
         return false;
       }
 
-      const shouldLoadMore = !state.loading &&
-        state.needLoadMore;
+      const shouldLoadMore = !state.loading && state.needLoadMore;
 
       if (shouldLoadMore) {
         await fetchDataInternal('loadMore');
@@ -325,7 +304,7 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
           needLoadMore: false
         }));
       }
-    }, [state, fetchDataInternal]);
+    }, [state.items.length, state.loading, state.needLoadMore, fetchDataInternal]);
 
     // Single select handler
     const handleItemPress = useCallback(
