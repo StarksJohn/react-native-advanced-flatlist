@@ -1,4 +1,4 @@
-# React Native Advanced FlatList
+# React Native Advanced FlatList  https://github.com/StarksJohn/react-native-advanced-flatlist
 
 A powerful React Native FlatList component that provides advanced features including pagination, pull-to-refresh, single selection, loading states, and more.
 
