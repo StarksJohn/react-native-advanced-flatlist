@@ -86,17 +86,19 @@ function checkGitStatus() {
 
 function runTests() {
   info('Running tests...');
+  
+  // Check if tests are properly configured first
+  const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+  if (packageJson.scripts.test && packageJson.scripts.test.includes('no test specified')) {
+    warning('No tests specified, skipping test step');
+    return;
+  }
+  
   try {
     exec('npm test');
     success('Tests passed');
   } catch {
-    // If tests fail with "no test specified", continue
-    const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-    if (packageJson.scripts.test && packageJson.scripts.test.includes('no test specified')) {
-      warning('No tests specified, skipping test step');
-    } else {
-      error('Tests failed. Please fix tests before releasing.');
-    }
+    error('Tests failed. Please fix tests before releasing.');
   }
 }
 
