@@ -170,7 +170,7 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
       onSingleSelectChange,
       onItemPress,
     } = props;
-
+    console.log('AdvancedFlatList props=',props)
     // State management
     const [state, setState] = useState<InternalState>({
       items: [],
@@ -181,15 +181,29 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
       selectedId: null,
       ...initialData,
     });
-
     // Refs
     const flatListRef = useRef<FlatList<ListItem>>(null);
     const refreshingRef = useRef(false);
     const styles = useMemo(() => createStyles(), []);
-
+    /**
+     * componentDidMount && componentWillUnmount
+     */
+    useEffect(
+      () => {
+        console.log(`AdvancedFlatList componentDidMount`);
+        flatListRef.current.scrollToOffset({offset: -100, animated: true});
+        autoRefresh && onRefresh();
+        //componentWillUnmount
+        return () => {
+          console.log(`CsxFlatList componentWillUnmount`);
+        };
+      },
+      []
+    );
     // Internal fetch data function
     const fetchDataInternal = useCallback(
       async (type: 'refresh' | 'loadMore') => {
+        console.log('fetchDataInternal type=',type)
         setState(prev => {
           const pageIndex = type === 'refresh' ? initPageIndex : prev.pageIndex + 1;
 
@@ -243,23 +257,14 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
       },
       [fetchData, initPageIndex, pageSize, state.pageIndex]
     );
-
     // Refresh handler
     const onRefresh = useCallback(() => {
       if (!refreshingRef.current) {
         setState(prev => ({...prev, needLoadMore: false}));
+        console.log('AdvancedFlatList onRefresh tag=',tag);
         fetchDataInternal('refresh');
       }
-    }, [fetchDataInternal]);
-
-    // Component lifecycle
-    useEffect(() => {
-      // Auto refresh if enabled
-      if (autoRefresh) {
-        onRefresh();
-      }
-    }, [autoRefresh, onRefresh]);
-
+    }, [fetchDataInternal,tag]);
     // Imperative handle for parent component access
     useImperativeHandle(
       ref,
@@ -287,7 +292,6 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
       }),
       [state.items, onRefresh]
     );
-
     // Load more handler
     const loadMoreItems = useCallback(async () => {
       if (state.items.length === 0) {
@@ -295,7 +299,7 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
       }
 
       const shouldLoadMore = !state.loading && state.needLoadMore;
-
+      console.log('AdvancedFlatList.tsx loadMoreItems shouldLoadMore=', shouldLoadMore);
       if (shouldLoadMore) {
         await fetchDataInternal('loadMore');
       } else {
@@ -363,7 +367,7 @@ const AdvancedFlatList = forwardRef<AdvancedFlatListRef, AdvancedFlatListProps>(
 
     return (
       <FlatList<ListItem>
-        {...(tag && { key: tag })}
+        key={tag}
         ref={flatListRef}
         style={[
           styles.flatList,

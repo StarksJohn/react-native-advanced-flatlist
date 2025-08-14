@@ -83,9 +83,31 @@ Project is configured for automatic npm publishing:
 2. Use `npm run publish:patch/minor/major` for automatic version control and publishing
 3. Build output includes source code (`src/`) and compiled code (`lib/`)
 
-## Testing Instructions
+## Testing and Development Workflow
 
 The project currently has no automated testing configured. When developing new features:
-- Use `example/BasicExample.tsx` as test cases
-- Manually verify pagination, refresh, selection and other core features
-- Ensure TypeScript compilation is error-free
+- Use `example/BasicExample.tsx` as comprehensive test case demonstrating all features
+- Manual verification checklist:
+  - Pagination and infinite scrolling
+  - Pull-to-refresh functionality
+  - Single selection mode with visual feedback
+  - Loading states and empty state handling
+  - Custom header and empty components
+  - Reference methods (refresh, scrollToTop, clearSelection, etc.)
+- Always run `npm run build` to ensure TypeScript compilation is error-free
+- Test with both initial data and dynamic data fetching
+
+## Component Implementation Details
+
+### Key Implementation Patterns
+- Main component uses `forwardRef` with `useImperativeHandle` to expose control methods
+- Internal state management handles pagination (pageIndex, pageSize), loading states, and selection
+- Data fetching is async with error handling - returns `ListData | null`
+- Single selection state is managed internally with optional callback notification
+- Refresh control integrates with data fetching for pull-to-refresh behavior
+
+### Important Type Constraints  
+- All list items must extend `ListItem` interface with required `id` property
+- FetchDataParams provides `pageIndex` and `pageSize` for pagination
+- RenderItemParams includes `selected` state for custom item rendering
+- Component uses minimal TypeScript config (strict: false) for broader compatibility

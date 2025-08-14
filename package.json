@@ -21,7 +21,14 @@
     "publish:patch": "npm version patch && npm publish",
     "publish:minor": "npm version minor && npm publish",
     "publish:major": "npm version major && npm publish",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "release:dry": "node scripts/release.js --dry-run",
+    "release:patch-auto": "node scripts/release.js --version patch",
+    "release:minor-auto": "node scripts/release.js --version minor",
+    "release:major-auto": "node scripts/release.js --version major",
+    "release:patch": "node scripts/release.js patch",
+    "release:minor": "node scripts/release.js minor",
+    "release:major": "node scripts/release.js major"
   },
   "keywords": [
     "react-native",
