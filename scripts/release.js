@@ -308,17 +308,14 @@ class PreflightChecks {
   static async checkDependencies() {
     logger.info('Checking dependencies');
     
-    // Check if node_modules exists
-    const nodeModulesPath = path.join(process.cwd(), 'node_modules');
-    if (!fs.existsSync(nodeModulesPath)) {
-      logger.warning('node_modules not found, running npm install');
-      const installResult = Utils.executeCommand('npm install');
-      if (!installResult.success) {
-        throw new Error('Failed to install dependencies');
-      }
+    // Always update dependencies to ensure they are latest
+    logger.info('Updating dependencies to ensure latest versions...');
+    const installResult = Utils.executeCommand('npm install');
+    if (!installResult.success) {
+      throw new Error('Failed to install/update dependencies');
     }
     
-    logger.success('Dependency check passed');
+    logger.success('Dependencies updated and check passed');
   }
 }
 
